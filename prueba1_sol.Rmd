@@ -1,0 +1,139 @@
+---
+title: "Hoja 1b de problemas y prácticas con R"
+author: "Cristina Acosta Muñiz"
+subtitle: Estadística Computacional I. Grado en Estadística
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+```
+
+En los siguientes ejercicios se debe utilizar el sistema "tidyverse" junto a los siguientes datasets de la librería "gapminder":
+
+- "gapminder"
+- "country_codes"
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(gapminder)
+
+data("gapminder")
+data("country_codes")
+```
+
+
+1. Muestre los nombres de las variables que tienen los dos datasets referidos. 
+
+```{r}
+colnames(gapminder)
+colnames(country_codes)
+```
+
+
+    1. Muestre a continuación las primeras filas de dichos datasets.
+    
+```{r}
+head(country_codes)
+head(gapminder)
+```
+
+    2. Busque en la ayuda del paquete "gapminder" el diccionario o definición de las variables que componen dichos datasets.
+    
+```{r}
+?gapminder
+```
+
+country: factor with 142 levels
+
+continent: factor with 5 levels
+
+year: ranges from 1952 to 2007 in increments of 5 years
+
+lifeExp: life expectancy at birth, in years
+
+pop: population
+
+gdpPercap: GDP per capita (US$, inflation-adjusted)
+
+```{r}
+?country_codes
+```
+
+country
+
+so_alpha: The 3-letter ISO 3166-1 alpha-3 code.
+
+iso_num: The 3-digit ISO 3166-1 numeric-3 code.
+
+    3. Muestre las primeras filas junto al tipo de objeto de cada una de las variables.
+    
+```{r}
+head(gapminder)
+str(gapminder)
+
+head(country_codes)
+str(country_codes)
+```
+
+
+2. Obtenga la esperanza de vida de los siguientes países: "Kenya", "Peru", "Syria" en el 2007, en una sola consulta con el sistema tidyverse, mostrándolos por orden decreciente de la esperanza de vida.
+
+```{r}
+gapminder %>% filter((country == "Kenya" | country == "Peru" | country == "Syria"), year == 2007) %>% arrange(desc(lifeExp)) %>% select(country,lifeExp)
+```
+
+
+3. ¿Cuántos países distintos aparecen en el dataset "gapminder"? ¿Cuántos países aparecen en Europa? Liste los nombres de estos últimos ordenados alfabéticamente.
+
+```{r}
+n_distinct(gapminder$country)
+```
+
+Hay 142 paises distintos en el dataset "gapminder".
+
+
+
+```{r}
+paises_europa <- gapminder %>% filter(continent=="Europe") %>% arrange(country)
+kable(paises_europa)
+n_distinct(paises_europa$country)
+```
+
+Hay 30 que aparecen en europa
+
+4. Calcule la población total por continentes para los últimos 5 años disponibles.
+
+```{r}
+datos <- gapminder %>% filter(year >= 1987)
+datos
+aggregate(pop ~ country,datos,sum)
+```
+
+
+5. Obtenga los códigos (`iso_alpha` e `iso_num`) asociados a cada uno los países de América que aparecen en 2002, construyendo un nuevo dataset que tenga: "nombre del país", "código alpha", "código num", y "nombre (código alpha)". Presente los datos con ayuda del paquete "kableExtra".
+
+```{r}
+datos1 <- gapminder %>% filter(continent=="Americas",year==2002)
+datos1
+```
+
+
+
+6. Represente gráficamente la evolución de la esperanza de vida de los países de Oceanía con ayuda del paquete ggplot2.
+
+
+```{r}
+library(ggplot2)
+oceania <- gapminder %>% filter(continent=="Oceania")
+oceania
+
+ggplot(oceania,aes(x=year,y=lifeExp,color=country)) + geom_line() + 
+   labs(title="Evolucion de la esperanza de vida en los paises de Oceania",
+        y = "Esperanza de vida",x="Año")
+```
+
+
