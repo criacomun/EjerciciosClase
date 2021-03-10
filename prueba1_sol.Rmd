@@ -29,8 +29,8 @@ data("country_codes")
 1. Muestre los nombres de las variables que tienen los dos datasets referidos. 
 
 ```{r}
-colnames(gapminder)
-colnames(country_codes)
+names(gapminder)
+names(country_codes)
 ```
 
 
@@ -43,8 +43,9 @@ head(gapminder)
 
     2. Busque en la ayuda del paquete "gapminder" el diccionario o definición de las variables que componen dichos datasets.
     
-```{r}
+```{r,eval=FALSE}
 ?gapminder
+help("gapminder",package = "gapminder")
 ```
 
 country: factor with 142 levels
@@ -72,11 +73,19 @@ iso_num: The 3-digit ISO 3166-1 numeric-3 code.
     3. Muestre las primeras filas junto al tipo de objeto de cada una de las variables.
     
 ```{r}
-head(gapminder)
+# Primera opcion:
 str(gapminder)
 
-head(country_codes)
+# Otra opcion:
+glimpse(gapminder)
+
+## Esta opcion es mejor porque lo presenta de forma mas abreviada, nos dice cuantas observaciones hay, cuantas variables hay, el tipo que son y los primeros datos.
+
+# Primera opcion:
 str(country_codes)
+
+# Otra opcion:
+glimpse(country_codes)
 ```
 
 
