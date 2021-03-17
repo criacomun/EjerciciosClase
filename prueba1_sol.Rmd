@@ -3,8 +3,8 @@ title: "Hoja 1b de problemas y prácticas con R"
 author: "Cristina Acosta Muñiz"
 subtitle: Estadística Computacional I. Grado en Estadística
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -92,44 +92,96 @@ glimpse(country_codes)
 2. Obtenga la esperanza de vida de los siguientes países: "Kenya", "Peru", "Syria" en el 2007, en una sola consulta con el sistema tidyverse, mostrándolos por orden decreciente de la esperanza de vida.
 
 ```{r}
+
+# Una forma:
+gapminder %>% filter(country %in% c("Kenya", "Peru","Syria"), year == 2007) %>% arrange(desc(lifeExp)) %>% select(country,year,lifeExp)
+
+# Otra forma:
 gapminder %>% filter((country == "Kenya" | country == "Peru" | country == "Syria"), year == 2007) %>% arrange(desc(lifeExp)) %>% select(country,lifeExp)
 ```
 
 
 3. ¿Cuántos países distintos aparecen en el dataset "gapminder"? ¿Cuántos países aparecen en Europa? Liste los nombres de estos últimos ordenados alfabéticamente.
 
+¿Cuántos países distintos aparecen en el dataset "gapminder"?
+
 ```{r}
-n_distinct(gapminder$country)
+gapminder %>% summarise(cuantosPaises=n_distinct(country)) # Aqui creamos una nueva variable
+
+n_distinct(gapminder$country) # Aqui simplemente me dice el numero
 ```
 
 Hay 142 paises distintos en el dataset "gapminder".
 
-
+¿Cuántos países aparecen en Europa?
 
 ```{r}
-paises_europa <- gapminder %>% filter(continent=="Europe") %>% arrange(country)
-kable(paises_europa)
+# Para ver los contienentes
+gapminder %>% distinct(continent)
+
+# Una opcion:
+
+gapminder %>% filter(continent=="Europe") %>% summarise(CuantosPaisesEuropa = n_distinct(country))
+
+# Otra opcion:
+
+paises_europa <- gapminder %>% filter(continent=="Europe")
 n_distinct(paises_europa$country)
 ```
 
-Hay 30 que aparecen en europa
+Hay 30 que aparecen en Europa.
+
+Liste los nombres de estos últimos ordenados alfabéticamente.
+
+```{r}
+gapminder %>% 
+  filter(continent=="Europe") %>% 
+  select(country) %>% 
+  distinct(country) %>% 
+  arrange(country) %>% 
+  pull() %>% # pull se usa para convertir en vector
+  as.character()
+```
+
 
 4. Calcule la población total por continentes para los últimos 5 años disponibles.
 
-```{r}
-datos <- gapminder %>% filter(year >= 1987)
-datos
-aggregate(pop ~ country,datos,sum)
+```{r,warning=FALSE}
+ultyears <- gapminder %>% 
+  select(year) %>% 
+  distinct(year) %>% 
+  arrange(desc(year)) %>% 
+  slice(1:5) %>% 
+  pull()
+
+gapminder %>% 
+  filter(year>=1987) %>% 
+  group_by(continent,year) %>% 
+  summarise(TotalPoblacion = sum(as.numeric(pop)))
+
+# ¡¡Atencion!!: la suma como enteros supera el mayor enero (integer overflow)
+
 ```
 
 
 5. Obtenga los códigos (`iso_alpha` e `iso_num`) asociados a cada uno los países de América que aparecen en 2002, construyendo un nuevo dataset que tenga: "nombre del país", "código alpha", "código num", y "nombre (código alpha)". Presente los datos con ayuda del paquete "kableExtra".
 
 ```{r}
-datos1 <- gapminder %>% filter(continent=="Americas",year==2002)
-datos1
+paises_codigo <- gapminder %>% 
+  filter(year == 2002, continent == "Americas") %>% 
+  select(country) %>% 
+  mutate(country = as.character(country)) %>% 
+  left_join(country_codes) %>% 
+  mutate(paiscodigo = paste0(country, "(",iso_alpha,")"))
+paises_codigo
 ```
 
+```{r,message=FALSE}
+library(kableExtra)
+paises_codigo %>% 
+  kable() %>% 
+  kable_styling("condensed",full_width = F)
+```
 
 
 6. Represente gráficamente la evolución de la esperanza de vida de los países de Oceanía con ayuda del paquete ggplot2.
@@ -137,11 +189,12 @@ datos1
 
 ```{r}
 library(ggplot2)
-oceania <- gapminder %>% filter(continent=="Oceania")
-oceania
-
-ggplot(oceania,aes(x=year,y=lifeExp,color=country)) + geom_line() + 
-   labs(title="Evolucion de la esperanza de vida en los paises de Oceania",
+gapminder %>% 
+  filter(continent=="Oceania") %>% 
+  ggplot(aes(x=year,y=lifeExp,color=country)) + 
+  geom_line() + 
+  labs(title="Evolucion de la esperanza de vida",
+       subtitle = "Paises de Oceania",
         y = "Esperanza de vida",x="Año")
 ```
 
